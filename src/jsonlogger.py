@@ -1,7 +1,7 @@
-"""
+'''
 This library is provided to allow standard python logging
 to output log data as JSON formatted strings
-"""
+'''
 import logging
 import json
 import re
@@ -32,7 +32,7 @@ def merge_record_extra(record, target, reserved=RESERVED_ATTR_HASH):
     :param target: dict to update
     :param reserved: dict or list with reserved keys to skip
     """
-    for key, value in record.__dict__.items():
+    for key, value in record.__dict__.iteritems():
         #this allows to have numeric keys
         if (key not in reserved
             and not (hasattr(key, "startswith") and key.startswith('_'))
@@ -77,6 +77,25 @@ class JsonFormatter(logging.Formatter):
         standard_formatters = re.compile(r'\(([^()]+?)\)', re.IGNORECASE)
         return standard_formatters.findall(self._fmt)
 
+    def formatException(self, ei):
+        """
+        Format and return the specified exception information as a dictonary
+        """
+        detail = {}
+        detail['type'] = ei[0].__name__
+        detail['value'] = ei[1]
+        tb = ei[2]
+        frames = []
+        while tb is not None:
+            f = tb.tb_frame
+            co = f.f_code
+            frames.append({'file':co.co_filename, 'ln': tb.tb_lineno, 'fn': co.co_name})
+            tb = tb.tb_next
+
+        detail['trace'] = frames
+
+        return detail
+
     def format(self, record):
         """Format a log record and serializes to json"""
         extras = {}
@@ -95,7 +114,12 @@ class JsonFormatter(logging.Formatter):
             log_record = {}
 
         for field in self._required_fields:
-            log_record[field] = record.__dict__.get(field)
+            log_record[field] = record.__dict__[field]
+        if record.exc_info:
+            if not record.exc_text:
+                record.exc_text = self.formatException(record.exc_info)
+            log_record['exc'] = record.exc_text
+
         log_record.update(extras)
         merge_record_extra(record, log_record, reserved=self._skip_fields)
 
