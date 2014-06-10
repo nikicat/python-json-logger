@@ -20,7 +20,7 @@ class TestJsonLogger(unittest.TestCase):
         self.logger = logging.getLogger('logging-test')
         self.logger.setLevel(logging.DEBUG)
         self.buffer = StringIO()
-        
+
         self.logHandler = logging.StreamHandler(self.buffer)
         self.logger.addHandler(self.logHandler)
 
@@ -55,7 +55,7 @@ class TestJsonLogger(unittest.TestCase):
             'threadName'
         ]
 
-        log_format = lambda x : ['%({0:s})'.format(i) for i in x] 
+        log_format = lambda x : ['%({0:s})'.format(i) for i in x]
         custom_format = ' '.join(log_format(supported_keys))
 
         fr = jsonlogger.JsonFormatter(custom_format)
@@ -69,7 +69,7 @@ class TestJsonLogger(unittest.TestCase):
         for supported_key in supported_keys:
             if supported_key in log_json:
                 self.assertTrue(True)
-    
+
     def testUnknownFormatKey(self):
         fr = jsonlogger.JsonFormatter('%(unknown_key)s %(message)s')
 
@@ -132,7 +132,7 @@ class TestJsonLogger(unittest.TestCase):
 if __name__=='__main__':
     if len(sys.argv[1:]) > 0 :
         if sys.argv[1] == 'xml':
-            testSuite = unittest.TestLoader().loadTestsFromTestCase(testJsonLogger)
+            testSuite = unittest.TestLoader().loadTestsFromTestCase(TestJsonLogger)
             xmlrunner.XMLTestRunner(output='reports').run(testSuite)
     else:
         unittest.main()
