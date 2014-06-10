@@ -17,6 +17,7 @@ RESERVED_ATTRS = (
 
 RESERVED_ATTR_HASH = dict(zip(RESERVED_ATTRS, RESERVED_ATTRS))
 
+
 def merge_record_extra(record, target, reserved=RESERVED_ATTR_HASH):
     """
     Merge extra attributes from LogRecord object into target dictionary
@@ -32,6 +33,7 @@ def merge_record_extra(record, target, reserved=RESERVED_ATTR_HASH):
                  key.startswith('_'))):
             target[key] = value
     return target
+
 
 class JsonFormatter(logging.Formatter):
     """
@@ -62,6 +64,7 @@ class JsonFormatter(logging.Formatter):
             self.json_default = _default_json_handler
 
         if fmt:
+            # parse format fields to get fields to include in output JSON
             self._required_fields = self.parse()
         else:
             # store all fields by default
@@ -98,14 +101,17 @@ class JsonFormatter(logging.Formatter):
             record.message = None
         else:
             record.message = record.getMessage()
+
         # only format time if needed
         if "asctime" in self._required_fields:
             record.asctime = self.formatTime(record, self.datefmt)
 
+        # copy required fields
         log_record = {}
         for field in self._required_fields:
             log_record[field] = record.__dict__.get(field)
 
+        # add exception info if present
         if record.exc_info:
             exc_type, exc_value, exc_trace = record.exc_info
             if not record.exc_text:
@@ -114,9 +120,13 @@ class JsonFormatter(logging.Formatter):
             log_record['excValue'] = str(exc_value)
             log_record['excTrace'] = self.format_trace(exc_trace)
 
+        # add extras
         log_record.update(extras)
+
+        # merge in fields
         merge_record_extra(record, log_record, reserved=self._skip_fields)
 
+        # dump
         return json.dumps(log_record,
                           default=self.json_default,
                           cls=self.json_encoder)
