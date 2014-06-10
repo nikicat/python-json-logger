@@ -1,7 +1,7 @@
-'''
+"""
 This library is provided to allow standard python logging
 to output log data as JSON formatted strings
-'''
+"""
 import logging
 import json
 import re
@@ -26,7 +26,7 @@ RESERVED_ATTR_HASH = dict(zip(RESERVED_ATTRS, RESERVED_ATTRS))
 
 def merge_record_extra(record, target, reserved=RESERVED_ATTR_HASH):
     """
-    Merges extra attributes from LogRecord object into target dictionary
+    Merge extra attributes from LogRecord object into target dictionary
 
     :param record: logging.LogRecord
     :param target: dict to update
@@ -34,9 +34,9 @@ def merge_record_extra(record, target, reserved=RESERVED_ATTR_HASH):
     """
     for key, value in record.__dict__.iteritems():
         #this allows to have numeric keys
-        if (key not in reserved
-            and not (hasattr(key, "startswith") and key.startswith('_'))
-            ):
+        if (key not in reserved and
+            not (hasattr(key, "startswith") and
+                 key.startswith('_'))):
             target[key] = value
     return target
 
@@ -77,24 +77,19 @@ class JsonFormatter(logging.Formatter):
         standard_formatters = re.compile(r'\(([^()]+?)\)', re.IGNORECASE)
         return standard_formatters.findall(self._fmt)
 
-    def formatException(self, ei):
-        """
-        Format and return the specified exception information as a dictonary
-        """
-        detail = {}
-        detail['type'] = ei[0].__name__
-        detail['value'] = ei[1]
-        tb = ei[2]
-        frames = []
-        while tb is not None:
-            f = tb.tb_frame
-            co = f.f_code
-            frames.append({'file':co.co_filename, 'ln': tb.tb_lineno, 'fn': co.co_name})
-            tb = tb.tb_next
-
-        detail['trace'] = frames
-
-        return detail
+    def format_trace(self, trace):
+        """Format and return trace"""
+        formatted_trace = []
+        while trace is not None:
+            frame = trace.tb_frame
+            frame_code = frame.f_code
+            formatted_trace.append(dict(
+                filename=frame_code.co_filename,
+                lineno=trace.tb_lineno,
+                name=frame_code.co_name,
+            ))
+            trace = trace.tb_next
+        return formatted_trace
 
     def format(self, record):
         """Format a log record and serializes to json"""
@@ -114,11 +109,15 @@ class JsonFormatter(logging.Formatter):
             log_record = {}
 
         for field in self._required_fields:
-            log_record[field] = record.__dict__[field]
+            log_record[field] = record.__dict__.get(field)
+
         if record.exc_info:
+            exc_type, exc_value, exc_trace = record.exc_info
             if not record.exc_text:
-                record.exc_text = self.formatException(record.exc_info)
-            log_record['exc'] = record.exc_text
+                record.exc_text = str(exc_value)
+            log_record['excType'] = exc_type.__module__ + '.' + exc_type.__name__
+            log_record['excValue'] = str(exc_value)
+            log_record['excTrace'] = self.format_trace(exc_trace)
 
         log_record.update(extras)
         merge_record_extra(record, log_record, reserved=self._skip_fields)

@@ -1,3 +1,4 @@
+import inspect
 import unittest, logging, json, sys
 
 try:
@@ -15,6 +16,12 @@ sys.path.append('src')
 import jsonlogger
 import datetime
 
+
+def lineno():
+    """Return the current line number in our program"""
+    return inspect.currentframe().f_back.f_lineno
+
+
 class TestJsonLogger(unittest.TestCase):
     def setUp(self):
         self.logger = logging.getLogger('logging-test')
@@ -25,26 +32,25 @@ class TestJsonLogger(unittest.TestCase):
         self.logger.addHandler(self.logHandler)
 
     def testLogException(self):
-        '''
-        !!! WARNING !!!
-        This test ensures proper exception capture, so adjusting the code may alter
-        stack traces and break this test
-        '''
-        fr = jsonlogger.JsonFormatter("%(levelname)s %(message)s")
+        fr = jsonlogger.JsonFormatter('%(levelname)s %(message)s')
         self.logHandler.setFormatter(fr)
-
+        raise_line_no = None
+        # noinspection PyBroadException
         try:
-            raise Exception("fubar")
-        except:
-            self.logger.exception("snafu")
+            raise_line_no = lineno() + 1
+            raise Exception('Some exception message')
+        except Exception:
+            self.logger.exception('Some log message')
         print self.buffer.getvalue()
-        logJson = json.loads(self.buffer.getvalue())
-        self.assertEqual(logJson["message"], "snafu")
-        self.assertTrue(logJson['exc'])
-        self.assertEqual(len(logJson['exc']['trace']),1)
-        self.assertEqual(logJson['exc']['trace'][0]['fn'], 'testLogException')
-        self.assertEqual(logJson['exc']['trace'][0]['ln'], 37)
-        self.assertTrue(logJson['exc']['trace'][0]['file'].endswith('tests.py'))
+        log_json = json.loads(self.buffer.getvalue())
+        self.assertEqual(log_json['message'], 'Some log message')
+        self.assertEquals(log_json['excType'], 'exceptions.Exception')
+        self.assertEquals(log_json['excValue'], 'Some exception message')
+        self.assertEqual(len(log_json['excTrace']), 1)
+        trace_frame = log_json['excTrace'][0]
+        self.assertEqual(trace_frame['name'], 'testLogException')
+        self.assertEqual(trace_frame['lineno'], raise_line_no)
+        self.assertTrue(trace_frame['filename'].endswith('tests.py'))
 
     def testDefaultFormat(self):
         fr = jsonlogger.JsonFormatter()

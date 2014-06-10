@@ -10,7 +10,7 @@ Pip:
 
 Pypi:
 
-   https://pypi.python.org/pypi/python-json-logger 
+   https://pypi.python.org/pypi/python-json-logger
 
 Manual:
 
@@ -61,29 +61,37 @@ Example
 =======
 
 Sample JSON with a full formatter (basically the log message from the unit test). Every log message will appear on 1 line like a typical logger.
-If logger.exception method is called or exc_info is set then an "exc" property will be added to the output.
+If logger.exception method is called or exc_info is set then an "excType", "excValue" and "excTrace" properties will be added to the output.
 
 ```json
 {
-    "threadName": "MainThread", 
-    "name": "root", 
-    "thread": 140735202359648, 
-    "created": 1336281068.506248, 
-    "process": 41937, 
-    "processName": "MainProcess", 
-    "relativeCreated": 9.100914001464844, 
-    "module": "tests", 
-    "funcName": "testFormatKeys", 
-    "levelno": 20, 
-    "msecs": 506.24799728393555, 
-    "pathname": "tests/tests.py", 
-    "lineno": 60, 
-    "asctime": ["12-05-05 22:11:08,506248"], 
-    "message": "testing logging format", 
-    "filename": "tests.py", 
+    "threadName": "MainThread",
+    "name": "root",
+    "thread": 140735202359648,
+    "created": 1336281068.506248,
+    "process": 41937,
+    "processName": "MainProcess",
+    "relativeCreated": 9.100914001464844,
+    "module": "tests",
+    "funcName": "testFormatKeys",
+    "levelno": 20,
+    "msecs": 506.24799728393555,
+    "pathname": "tests/tests.py",
+    "lineno": 60,
+    "asctime": ["12-05-05 22:11:08,506248"],
+    "message": "testing logging format",
+    "filename": "tests.py",
     "levelname": "INFO",
     "special": "value",
     "run": 12,
-    "exc": {"type": "Exception", "trace": [{"ln": 37, "fn": "testLogException", "file": "/Users/you/src/libs/python-json-logger/tests/tests.py"}], "value": "fubar"}
+    "excType": "exceptions.Exception",
+    "excValue": "Some exception message",
+    "excTrace": [
+        {
+            "lineno": 32,
+            "name": "some_function_name",
+            "filename": "/path/to/source/file.py"
+        }
+    ]
 }
 ```
