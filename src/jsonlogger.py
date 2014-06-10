@@ -47,7 +47,7 @@ class JsonFormatter(logging.Formatter):
     json default encoder
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, fmt=None, *args, **kwargs):
         """
         :param json_default: a function for encoding non-standard objects
             as outlined in http://docs.python.org/2/library/json.html
@@ -55,7 +55,7 @@ class JsonFormatter(logging.Formatter):
         """
         self.json_default = kwargs.pop("json_default", None)
         self.json_encoder = kwargs.pop("json_encoder", None)
-        super(JsonFormatter, self).__init__(*args, **kwargs)
+        super(JsonFormatter, self).__init__(fmt, *args, **kwargs)
         if not self.json_encoder and not self.json_default:
             def _default_json_handler(obj):
                 """Print dates in ISO format"""
@@ -67,7 +67,13 @@ class JsonFormatter(logging.Formatter):
                     return obj.strftime('%H:%M')
                 return str(obj)
             self.json_default = _default_json_handler
-        self._required_fields = self.parse()
+
+        if fmt:
+            self._required_fields = self.parse()
+        else:
+            # store all fields by default
+            self._required_fields = list(RESERVED_ATTRS)
+
         self._skip_fields = dict(zip(self._required_fields,
                                      self._required_fields))
         self._skip_fields.update(RESERVED_ATTR_HASH)

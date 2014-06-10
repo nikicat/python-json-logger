@@ -117,6 +117,38 @@ class TestJsonLogger(unittest.TestCase):
         for key in ['name', 'message']:
             self.assertIn(key, log_json)
 
+    def testDefaultFormatKeys(self):
+        supported_keys = [
+            'asctime',
+            'created',
+            'filename',
+            'funcName',
+            'levelname',
+            'levelno',
+            'lineno',
+            'module',
+            'msecs',
+            'message',
+            'name',
+            'pathname',
+            'process',
+            'processName',
+            'relativeCreated',
+            'thread',
+            'threadName'
+        ]
+
+        fr = jsonlogger.JsonFormatter()
+        self.logHandler.setFormatter(fr)
+
+        msg = "testing logging format"
+        self.logger.info(msg)
+        log_msg = self.buffer.getvalue()
+        log_json = json.loads(log_msg)
+
+        for supported_key in supported_keys:
+            self.assertIn(supported_key, log_json)
+
     def testLogADict(self):
         fr = jsonlogger.JsonFormatter()
         self.logHandler.setFormatter(fr)
