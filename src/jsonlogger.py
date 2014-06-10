@@ -7,13 +7,6 @@ import json
 import re
 import datetime
 
-#Support order in python 2.7 and 3
-try:
-    # noinspection PyUnresolvedReferences
-    from collections import OrderedDict
-except ImportError:
-    pass
-
 # skip natural LogRecord attributes
 # http://docs.python.org/library/logging.html#logrecord-attributes
 RESERVED_ATTRS = (
@@ -109,11 +102,7 @@ class JsonFormatter(logging.Formatter):
         if "asctime" in self._required_fields:
             record.asctime = self.formatTime(record, self.datefmt)
 
-        try:
-            log_record = OrderedDict()
-        except NameError:
-            log_record = {}
-
+        log_record = {}
         for field in self._required_fields:
             log_record[field] = record.__dict__.get(field)
 
