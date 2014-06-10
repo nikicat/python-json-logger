@@ -95,8 +95,7 @@ class TestJsonLogger(unittest.TestCase):
         log_json = json.loads(log_msg)
 
         for supported_key in supported_keys:
-            if supported_key in log_json:
-                self.assertTrue(True)
+            self.assertIn(supported_key, log_json)
 
     def testUnknownFormatKey(self):
         fr = jsonlogger.JsonFormatter('%(unknown_key)s %(message)s')
