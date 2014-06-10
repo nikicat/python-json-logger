@@ -1,7 +1,7 @@
-'''
+"""
 This library is provided to allow standard python logging
 to output log data as JSON formatted strings
-'''
+"""
 import logging
 import json
 import re
@@ -9,6 +9,7 @@ import datetime
 
 #Support order in python 2.7 and 3
 try:
+    # noinspection PyUnresolvedReferences
     from collections import OrderedDict
 except ImportError:
     pass
@@ -34,7 +35,7 @@ def merge_record_extra(record, target, reserved=RESERVED_ATTR_HASH):
     for key, value in record.__dict__.items():
         #this allows to have numeric keys
         if (key not in reserved
-            and not (hasattr(key,"startswith") and key.startswith('_'))
+            and not (hasattr(key, "startswith") and key.startswith('_'))
             ):
             target[key] = value
     return target
@@ -57,7 +58,7 @@ class JsonFormatter(logging.Formatter):
         super(JsonFormatter, self).__init__(*args, **kwargs)
         if not self.json_encoder and not self.json_default:
             def _default_json_handler(obj):
-                '''Prints dates in ISO format'''
+                """Print dates in ISO format"""
                 if isinstance(obj, datetime.datetime):
                     return obj.strftime(self.datefmt or '%Y-%m-%dT%H:%M')
                 elif isinstance(obj, datetime.date):
@@ -72,12 +73,12 @@ class JsonFormatter(logging.Formatter):
         self._skip_fields.update(RESERVED_ATTR_HASH)
 
     def parse(self):
-        """Parses format string looking for substitutions"""
+        """Parse format string looking for substitutions"""
         standard_formatters = re.compile(r'\(([^()]+?)\)', re.IGNORECASE)
         return standard_formatters.findall(self._fmt)
 
     def format(self, record):
-        """Formats a log record and serializes to json"""
+        """Format a log record and serializes to json"""
         extras = {}
         if isinstance(record.msg, dict):
             extras = record.msg
