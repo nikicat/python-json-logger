@@ -80,6 +80,15 @@ class TestJsonLogger(unittest.TestCase):
         except:
             self.assertTrue(False, "Should succeed")
 
+    def testFormatParsingWithParentheses(self):
+        fr = jsonlogger.JsonFormatter('(%(name)s) %(message)s')
+        self.logHandler.setFormatter(fr)
+        self.logger.info('some message')
+        log_msg = self.buffer.getvalue()
+        log_json = json.loads(log_msg)
+        for key in ['name', 'message']:
+            self.assertIn(key, log_json)
+
     def testLogADict(self):
         fr = jsonlogger.JsonFormatter()
         self.logHandler.setFormatter(fr)
