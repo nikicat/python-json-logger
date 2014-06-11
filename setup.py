@@ -16,7 +16,6 @@ setup(
     author="Zakaria Zajac",
     author_email="zak@madzak.com",
     package_dir={'': 'src'},
-    packages=[''],
     test_suite="tests.tests",
     install_requires=['setuptools'],
     classifiers=[
