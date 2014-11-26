@@ -8,9 +8,9 @@ if sys.version_info < (2, 6):
 from setuptools import setup
 
 setup(
-    name="python-json-logger",
-    version="0.0.5",
-    url="http://github.com/madzak/python-json-logger",
+    name="json-formatter",
+    version="0.1.0",
+    url="http://github.com/nikicat/python-json-logger",
     license="BSD",
     description="A python library adding a json log formatter",
     author="Zakaria Zajac",
