@@ -6,6 +6,7 @@ import logging
 import json
 import datetime
 import inspect
+import traceback
 
 # skip natural LogRecord attributes
 # http://docs.python.org/library/logging.html#logrecord-attributes
@@ -39,20 +40,6 @@ class JsonFormatter(logging.Formatter):
     def format(self, record):
         """Format a log record and serializes to json"""
 
-        def format_trace(trace):
-            """Format and return trace"""
-            formatted_trace = []
-            while trace is not None:
-                frame = trace.tb_frame
-                frame_code = frame.f_code
-                formatted_trace.append(dict(
-                    filename=frame_code.co_filename,
-                    lineno=trace.tb_lineno,
-                    name=frame_code.co_name,
-                ))
-                trace = trace.tb_next
-            return formatted_trace
-
         def convert(value, depth):
             """Covert nested dict to dict with limited depth ready for json serialization."""
             if isinstance(value, (str, int, float, bool, type(None))):
@@ -60,7 +47,7 @@ class JsonFormatter(logging.Formatter):
             if isinstance(value, datetime.datetime):
                 return '{:%FT%TZ}'.format(datetime.datetime.utcfromtimestamp(value.timestamp()))
             if inspect.istraceback(value):
-                return format_trace(value)
+                return '\n\n'.join(traceback.format_tb(value))
             if isinstance(value, type):
                 return '{}.{}'.format(value.__module__, value.__name__)
             if isinstance(value, (dict, list, set, tuple)):

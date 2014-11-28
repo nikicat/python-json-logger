@@ -46,13 +46,13 @@ class TestJsonLogger(unittest.TestCase):
             self.logger.exception('Some log message')
         log_json = json.loads(self.buffer.getvalue())
         self.assertEqual(log_json['msg'], 'Some log message')
+        self.assertEqual(len(log_json['exc_info']), 3)
         self.assertEqual(log_json['exc_info'][0], 'builtins.Exception')
         self.assertEqual(log_json['exc_info'][1], "Exception('Some exception message',)")
-        self.assertEqual(len(log_json['exc_info'][2]), 1)
-        trace_frame = log_json['exc_info'][2][0]
-        self.assertEqual(trace_frame['name'], 'testLogException')
-        self.assertEqual(trace_frame['lineno'], raise_line_no)
-        self.assertTrue(trace_frame['filename'].endswith('tests.py'))
+        trace = log_json['exc_info'][2]
+        self.assertTrue('testLogException' in trace)
+        self.assertTrue(str(raise_line_no) in trace)
+        self.assertTrue('tests.py' in trace)
 
     def testDefaultFormat(self):
         fr = jsonlogger.JsonFormatter()
